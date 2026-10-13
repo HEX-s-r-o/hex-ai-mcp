@@ -11,14 +11,6 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
-    volumes:
-      # Branding override: swap the logo without an image rebuild. The host
-      # file must exist at checkout (it ships in this repo under
-      # apps/frontend/public/branding/). Read-only: runtime never writes it.
-      - ./apps/frontend/public/branding/logo.png:/app/apps/frontend/public/branding/logo.png:ro
-      # Abonus data bridge: host directory exposed to the container at /data
-      # for the a-bonus tooling that reads table data from the mounted tree.
-      - ./abonus-data:/data
     ports:
       # Publish on loopback only. A bare "12008:12008" binds every host
       # interface, so on a box with a public IP the unauthenticated app port is
@@ -258,6 +250,13 @@ services:
         condition: service_healthy
     restart: "no"
     volumes:
+      # Branding override: swap the logo without an image rebuild. The host
+      # file must exist at checkout (it ships in this repo under
+      # apps/frontend/public/branding/). Read-only: runtime never writes it.
+      - ./apps/frontend/public/branding/logo.png:/app/apps/frontend/public/branding/logo.png:ro
+      # Abonus data bridge: host directory exposed to the container at /data
+      # for the a-bonus tooling that reads table data from the mounted tree.
+      - ./abonus-data:/data
       # Persist the uv cache across container recreates. Without this, every
       # `docker compose up -d`/recreate wipes the writable layer and the next
       # `uvx <pkg>@latest` spawn for each STDIO server cold-installs from
