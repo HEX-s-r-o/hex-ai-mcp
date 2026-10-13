@@ -41,6 +41,10 @@ yarn-error.log*
 .env.*
 .claude
 
+# Runtime/data (may contain external credentials — never commit)
+abonus-data/
+.playwright-mcp/
+
 .cursor/
 .vscode/
 .idea/
