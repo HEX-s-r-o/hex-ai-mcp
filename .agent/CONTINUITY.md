@@ -97,3 +97,6 @@ Production fixes + branding complete and being pushed as branch `fix/dedupe-and-
 4. Compose volumes: branding logo bind-mount (ro) + `./abonus-data:/data`.
 5. HEX branding: default logo `/branding/logo.png`, HEXLOGO.png as favicon via `app/icon.png`, default favicon.ico removed.
 6. `.gitignore` hardened for sandbox artifacts (`*.key`, `.env.*`, `.claude`).
+
+### 2026-10-13T19:23Z [USER] — PUSHED
+**Branch `fix/dedupe-and-admin` pushed to GitHub.** Commit `2ba1e43` (`fix(pool): dedupe tool names before bulk insert; bootstrap admin role; HEX branding and logos`) authored and committed as `lui-do <264496496+lui-do@users.noreply.github.com>` (matches HEX authorship rule). Remote verified: `refs/heads/fix/dedupe-and-admin` == local `2ba1e43d34b8...`. PR offer URL: `https://github.com/HEX-s-r-o/hex-ai-mcp/pull/new/fix/dedupe-and-admin`. VPS deployment steps documented in chat reply: clone/pull branch + `docker compose up -d --build`; `BOOTSTRAP_USERS` with `"role":"admin"` for auto-admin provisioning.
