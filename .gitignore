@@ -37,6 +37,9 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+*.key
+.env.*
+.claude
 
 .cursor/
 .vscode/

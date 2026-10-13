@@ -30,7 +30,10 @@ import { env } from "next-runtime-env";
  */
 export const DEFAULT_PRODUCT_NAME = "Umbrella MCP Gateway";
 export const DEFAULT_ORG_NAME = "Umbrella IT";
-export const DEFAULT_LOGO_PATH = "/umbrella-bug.png";
+// HEX branding (see UMBRELLA_FORK.md). logo.png ships in this repo under
+// apps/frontend/public/branding/ and is overridable at runtime via a compose
+// volume mount without an image rebuild. HEXLOGO.png is the square favicon.
+export const DEFAULT_LOGO_PATH = "/branding/logo.png";
 export const DEFAULT_DESCRIPTION =
   "Umbrella IT Group's MCP gateway — aggregates Autotask, IT Glue, CIPP, registry and more into curated namespaces for AI tooling.";
 

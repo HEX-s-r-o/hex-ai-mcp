@@ -28,16 +28,23 @@ export class ToolsRepository {
       return [];
     }
 
-    // Format tools for database insertion
-    const toolsToInsert = input.tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description || "",
-      toolSchema: {
-        type: "object" as const,
-        ...tool.inputSchema,
-      },
-      mcp_server_uuid: input.mcpServerUuid,
-    }));
+    // Format tools for database insertion (dedupe by name — an upstream server may
+    // expose the same tool name in more than one tool group, e.g. a-bonus's
+    // `appendTableRows` for both Docs and Sheets tables; UNIQUE(name, mcp_server)
+    // forbids two rows in one ON CONFLICT batch).
+    const toolsToInsert = Array.from(
+      new Map(
+        input.tools.map((tool) => [
+          tool.name,
+          {
+            name: tool.name,
+            description: tool.description || "",
+            toolSchema: { type: "object" as const, ...tool.inputSchema },
+            mcp_server_uuid: input.mcpServerUuid,
+          },
+        ]),
+      ).values(),
+    );
 
     // Batch insert all tools with upsert
     const result = await db

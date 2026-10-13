@@ -202,6 +202,7 @@ type UserConfig = {
   email: string;
   password: string;
   name?: string;
+  role?: "admin" | "member";   // lets bootstrap designate the operator as admin
 };
 
 type ApiKeyConfig = {
@@ -932,6 +933,7 @@ async function ensureUser(
         name,
         emailVerified: true,
         updatedAt: new Date(),
+        ...(userConfig.role === "admin" ? { role: "admin" } : {}),
       })
       .where(eq(usersTable.id, user.id));
   } catch (err) {

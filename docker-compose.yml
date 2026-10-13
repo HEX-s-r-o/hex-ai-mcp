@@ -1,17 +1,24 @@
 services:
   app:
-    container_name: metamcp
-    # THE FORK IMAGE, not upstream's. This compose is what the README quick
-    # start tells you to run, so pointing it back at upstream's GHCR namespace
-    # silently deploys upstream MetaMCP from a clone of this fork — you get
-    # none of the fork's fixes (OAuth refresh-token grant, configurable TTLs,
-    # session recovery, RBAC, pool-cap env wiring) and nothing errors to tell
-    # you. Built from `umbrella` on every push by
-    # .github/workflows/umbrella-build.yml.
-    image: ghcr.io/umbrella-it-group/metamcp:latest
-    pull_policy: always
+    container_name: hex-ai-mcp
+    # Build from the local repo so the deploy actually runs this fork's code.
+    # The old upstream image (ghcr.io/umbrella-it-group/metamcp:latest) is
+    # replaced because it lacks our patches (admin bootstrap, tool dedupe,
+    # OAuth refresh-token grant, RBAC, pool fixes). Build is deterministic
+    # — Dockerfile base images are digest-pinned and pnpm-lock.yaml is frozen.
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
+    volumes:
+      # Branding override: swap the logo without an image rebuild. The host
+      # file must exist at checkout (it ships in this repo under
+      # apps/frontend/public/branding/). Read-only: runtime never writes it.
+      - ./apps/frontend/public/branding/logo.png:/app/apps/frontend/public/branding/logo.png:ro
+      # Abonus data bridge: host directory exposed to the container at /data
+      # for the a-bonus tooling that reads table data from the mounted tree.
+      - ./abonus-data:/data
     ports:
       # Publish on loopback only. A bare "12008:12008" binds every host
       # interface, so on a box with a public IP the unauthenticated app port is
