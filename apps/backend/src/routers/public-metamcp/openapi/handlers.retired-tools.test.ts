@@ -46,6 +46,9 @@ vi.mock("../../../lib/metamcp/fetch-metamcp", () => ({
   getMcpServers: vi
     .fn()
     .mockResolvedValue({ "server-ninja": { name: "ninja" } }),
+  // A routing miss checks for any additional mounted owner omitted from the
+  // routable set, including error-gated servers (tool-call-routing.ts).
+  getNamespaceServerStates: vi.fn().mockResolvedValue([]),
 }));
 vi.mock("../../../db/repositories/namespaces.repo", () => ({
   namespacesRepository: {
