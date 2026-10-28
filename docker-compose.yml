@@ -264,8 +264,29 @@ services:
       # in error_status=ERROR. The image ships /home/nextjs/.cache/uv owned by
       # nextjs (uid 1001) so a fresh named volume inherits correct ownership.
       - uv_cache:/home/nextjs/.cache/uv
+      - /home/hex-chat/google-docs-mcp:/app/google-docs-mcp:ro
+      - /home/hex-chat/hex-eurlex-legal-mcp:/opt/hexeurlex:ro
+      - /home/hex-chat/hex-food-safety-mcp:/opt/foodsafety:ro
     networks:
       - metamcp-network
+      - librechat_default
+
+  google-mcp:
+    image: node:20
+    container_name: google-mcp
+    working_dir: /app
+    volumes:
+      - /home/hex-chat/google-mcp:/app
+      - /home/hex-chat/google-mcp/data:/root/.local/share/google-mcp     # tokens.json persists
+      - /home/hex-chat/google-mcp/config:/root/.config/google-mcp          # credentials.json persists
+    command: node dist/index.js
+    environment:
+      NODE_ENV: production
+      GOOGLE_MCP_HOST: 0.0.0.0        # ← bind all interfaces inside the container
+      GOOGLE_MCP_PORT: 3015
+    networks:
+      - metamcp-network               # same network as the gateway
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
@@ -298,7 +319,13 @@ volumes:
     driver: local
   uv_cache:
     driver: local
+  google_mcp_tokens:
+    driver: local
+  google_mcp_config:
+    driver: local
 
 networks:
   metamcp-network:
     driver: bridge
+  librechat_default:
+    external: true
