@@ -264,6 +264,21 @@ services:
       # in error_status=ERROR. The image ships /home/nextjs/.cache/uv owned by
       # nextjs (uid 1001) so a fresh named volume inherits correct ownership.
       - uv_cache:/home/nextjs/.cache/uv
+      # Persist the npm/npx cache for STDIO servers that are installed as npm
+      # packages (@czagents/*). Without a named volume, `npx -y <pkg>` cold-
+      # installs on every container recreate — slow enough to trip the crash
+      # detector. Matches the uv_cache pattern above.
+      - npm_cache:/home/nextjs/.npm
+      # OfficeCLI pass-through workspace (rw): holds the linux-x64 binary
+      # (officecli) and the shared file area where Drive downloads / OfficeCLI
+      # edits live, so LibreChat and the officecli STDIO process reach the same
+      # files by absolute path. Host path ~/officecli on the VPS.
+      - /home/hex-chat/officecli:/home/officecli
+      # cz-agents (self-hosted @czagents/*) data mount (rw): writable home for
+      # the local SANCTIONS_DB mirror that @czagents/dd (and sanctions) build.
+      # Kept separate from the OfficeCLI workspace. Host path ~/czagents
+      # (= /home/hex-chat/czagents on the VPS).
+      - /home/hex-chat/czagents:/home/czagents
       - /home/hex-chat/google-docs-mcp:/app/google-docs-mcp:ro
       - /home/hex-chat/hex-eurlex-legal-mcp:/opt/hexeurlex:ro
       - /home/hex-chat/hex-food-safety-mcp:/opt/foodsafety:ro
@@ -318,6 +333,8 @@ volumes:
   postgres_data:
     driver: local
   uv_cache:
+    driver: local
+  npm_cache:
     driver: local
   google_mcp_tokens:
     driver: local

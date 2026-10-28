@@ -19,6 +19,17 @@ Future planned work inferred from repo state (not confirmed with team):
 
 ## [DECISIONS]
 
+### 2026-10-28T22:55Z [USER]
+**Add Czech/EU company-diligence + Office file editing to the gateway (self-hosted).** Reconciled to:
+1. **ARES source = martinhavel/cz-agents-mcp** (`@czagents/ares`), NOT `vzeman/ares-mcp-server` (skipped). Same ARES data, but cz-agents is npm/node (matches gateway image + google-docs-mcp pattern), a superset of ARES tools, and already carries the EU-country expansion the operator wants via `@czagents/eu-registry` (16 countries). vzeman adds a redundant Python runtime for zero gain.
+2. **Scope = full @czagents suite self-hosted** (operator chose "everything prepared now"): ares, eu-registry, cnb, isir, adis, dd. No hosted `*.cz-agents.dev` / no API key.
+3. **OfficeCLI = native MCP stdio** (`officecli mcp`) from the single linux-x64 .NET binary; no wrapper. Binary + pass-through files live at `~/officecli` on the VPS (operator-confirmed dedicated dir instead of `/data`), mounted rw into the gateway at `/home/officecli`.
+4. **Expose-all default;** operator will restrict later via per-namespace tool INACTIVE toggles / LibreChat per-agent toggles.
+5. **Each of the three is a standalone STDIO server** (`officecli` = `officecli mcp`; ARES = `cz-ares`/`@czagents/ares`; EU agents = `cz-eu-registry`/`@czagents/eu-registry`), NOT nested. cz-agents data gets its **own** rw mount `~/czagents → /home/czagents` (SANCTIONS_DB), kept distinct from the OfficeCLI workspace `~/officecli → /home/officecli`. (Here `~` = `/home/hex-chat`.)
+
+### 2026-10-28T22:55Z [USER]
+**node24 is the VPS deploy line.** Operator confirmed the uncommitted compose/Dockerfile work belongs on `node24` and will push it themselves: `git push -u origin node24` (current dev-box cannot auth — invalid gh token, no SSH key, no direct DNS in sandbox).
+
 ### 2026-10-13T19:23Z [USER]
 **Decision:** Create `AGENTS.md` and `.agent/CONTINUITY.md` now; treat this repo as an active HEX project despite being a fork. The upstream (`metatool-ai/metamcp`) and the Umbrella IT Group fork are documented as provenance, but the operational owner going forward is HEX s.r.o.
 
@@ -31,6 +42,12 @@ Future planned work inferred from repo state (not confirmed with team):
 ---
 
 ## [PROGRESS]
+
+### 2026-10-28T22:55Z [CODE]
+**cz-agents + OfficeCLI integration prepared (committed to local node24; operator pushes).**
+- `docker-compose.yml`: added rw **bind mount** host `~/officecli` (= `/home/hex-chat/officecli`) → container `/home/officecli` (OfficeCLI binary + pass-through file workspace; operator chose a dedicated dir over `/data`), and **named volume** `npm_cache` mounted at container `/home/nextjs/.npm` (gateway app runs as user `nextjs`, HOME=`/home/nextjs`; a named volume has no fixed host path, so `/home/hex-chat` is NOT part of its mount target — that path exists only on the VPS host). `npm_cache` persists `npx -y @czagents/*` installs across container recreates, mirroring the existing `uv_cache` pattern. Validated: `docker-compose config` exits 0.
+- New `docs/vps-cz-agents-officecli-setup.md` runbook: pull `node24`, create external `librechat_default` network, OfficeCLI binary install + STDIO server (`officecli mcp`), one STDIO server per `@czagents` package (`cz-ares`, `cz-eu-registry`, `cz-cnb`, `cz-isir` w/ ISIR_SOAP_ENABLED, `cz-adis` w/ ADIS_SOAP_ENABLED, `cz-dd` w/ SANCTIONS_DB=/home/czagents/sanctions.db on its own `czagents` mount), namespace/expose-all, verification.
+- Key discovery: gateway STDIO spawn does **not** persist a per-server `cwd` (client.ts builds StdioServerParameters without `cwd`; `cwd` is inherited from the gateway process). File-backed STDIO env values must therefore be **absolute paths** under a mounted workspace (`/home/czagents/...`, `/home/officecli/...`), not `~/...`.
 
 ### 2026-10-13T19:23Z [USER]
 Project documentation initialized:
